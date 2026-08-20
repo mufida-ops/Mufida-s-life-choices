@@ -1,0 +1,65 @@
+{
+  "expo": {
+    "name": "Mufida's Life Choices",
+    "slug": "Mufida-s-life-choices",
+    "version": "1.0.0",
+    "scheme": "mufida",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": true,
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.mufida.lifeassistant",
+      "infoPlist": {
+        "NSMicrophoneUsageDescription": "Used so you can capture thoughts, tasks and reminders by speaking instead of typing.",
+        "NSSpeechRecognitionUsageDescription": "Used to turn your speech into text when you use voice capture."
+      }
+    },
+    "android": {
+      "package": "com.mufida.lifeassistant",
+      "adaptiveIcon": {
+        "backgroundColor": "#F6F1EA",
+        "foregroundImage": "./assets/android-icon-foreground.png",
+        "backgroundImage": "./assets/android-icon-background.png",
+        "monochromeImage": "./assets/android-icon-monochrome.png"
+      },
+      "predictiveBackGestureEnabled": false,
+      "permissions": ["RECORD_AUDIO", "POST_NOTIFICATIONS"]
+    },
+    "web": {
+      "favicon": "./assets/favicon.png",
+      "bundler": "metro"
+    },
+    "plugins": [
+      "expo-router",
+      "expo-font",
+      [
+        "expo-splash-screen",
+        {
+          "backgroundColor": "#F6F1EA",
+          "image": "./assets/icon.png",
+          "imageWidth": 120
+        }
+      ],
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/icon.png",
+          "color": "#3A3F58"
+        }
+      ],
+      [
+        "expo-speech-recognition",
+        {
+          "microphonePermission": "Used so you can capture thoughts, tasks and reminders by speaking instead of typing.",
+          "speechRecognitionPermission": "Used to turn your speech into text when you use voice capture.",
+          "androidSpeechServicePackages": ["com.google.android.googlequicksearchbox"]
+        }
+      ]
+    ],
+    "experiments": {
+      "typedRoutes": true
+    }
+  }
+}
