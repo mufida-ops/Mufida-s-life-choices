@@ -4,6 +4,7 @@ import { EMPTY_STATES } from '../../constants/emptyStates';
 import { colors, spacing, type } from '../../constants/theme';
 import type { ResurfacingCandidate } from '../../types/models';
 import { AppText } from '../ui/AppText';
+import { EmptyState } from '../ui/EmptyState';
 import { RightNowItem } from './RightNowItem';
 
 export function RightNowList({ items }: { items: ResurfacingCandidate[] }) {
@@ -13,9 +14,7 @@ export function RightNowList({ items }: { items: ResurfacingCandidate[] }) {
         RIGHT NOW
       </AppText>
       {items.length === 0 ? (
-        <AppText variant="body" color={colors.inkMuted}>
-          {EMPTY_STATES.rightNow}
-        </AppText>
+        <EmptyState text={EMPTY_STATES.rightNow} />
       ) : (
         <View style={styles.list}>
           {items.map((item) => (

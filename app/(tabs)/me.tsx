@@ -4,6 +4,7 @@ import { Ionicons } from '@expo/vector-icons';
 
 import { AppText } from '../../components/ui/AppText';
 import { Card } from '../../components/ui/Card';
+import { EmptyState } from '../../components/ui/EmptyState';
 import { Screen } from '../../components/ui/Screen';
 import { DOMAINS, DOMAIN_LABEL } from '../../constants/domains';
 import { EMPTY_STATES } from '../../constants/emptyStates';
@@ -90,9 +91,7 @@ export default function MeScreen() {
         </View>
 
         {memories.length === 0 ? (
-          <AppText variant="body" color={colors.inkMuted} style={styles.emptyMemories}>
-            {EMPTY_STATES.memories}
-          </AppText>
+          <EmptyState text={EMPTY_STATES.memories} />
         ) : (
           <View style={styles.list}>
             {memories.map((memory) => (
@@ -192,7 +191,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  emptyMemories: {},
   list: { gap: spacing.sm },
   editInput: {
     color: colors.ink,

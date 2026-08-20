@@ -6,6 +6,7 @@ import { router } from 'expo-router';
 
 import { AppText } from '../../components/ui/AppText';
 import { Button } from '../../components/ui/Button';
+import { FloralOrnament } from '../../components/ui/FloralOrnament';
 import { colors, heroGradient, radii, shadow, spacing } from '../../constants/theme';
 import { localAuth } from '../../lib/auth/localAuth';
 import { useAppStore } from '../../store/useAppStore';
@@ -34,6 +35,22 @@ export default function OnboardingScreen() {
 
   return (
     <LinearGradient colors={heroGradient} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.gradient}>
+      <FloralOrnament
+        size={140}
+        lineColor="rgba(255,255,255,0.9)"
+        bloomColor="rgba(255,255,255,0.55)"
+        opacity={0.45}
+        rotate={20}
+        style={styles.ornamentTopRight}
+      />
+      <FloralOrnament
+        size={110}
+        lineColor="rgba(255,255,255,0.9)"
+        bloomColor="rgba(255,255,255,0.5)"
+        opacity={0.35}
+        flip
+        style={styles.ornamentBottomLeft}
+      />
       <SafeAreaView style={styles.flex} edges={['top', 'left', 'right', 'bottom']}>
         <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={styles.flex}>
           <View style={styles.content}>
@@ -109,6 +126,8 @@ function Field(props: {
 
 const styles = StyleSheet.create({
   gradient: { flex: 1 },
+  ornamentTopRight: { position: 'absolute', top: 0, right: -10 },
+  ornamentBottomLeft: { position: 'absolute', bottom: 0, left: -10 },
   flex: { flex: 1, justifyContent: 'center' },
   content: { padding: spacing.lg },
   header: { marginBottom: spacing.xl },

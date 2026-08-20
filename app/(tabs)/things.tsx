@@ -5,6 +5,7 @@ import { router } from 'expo-router';
 import { AppText } from '../../components/ui/AppText';
 import { Card } from '../../components/ui/Card';
 import { DomainTag } from '../../components/ui/DomainTag';
+import { EmptyState } from '../../components/ui/EmptyState';
 import { Screen } from '../../components/ui/Screen';
 import { EMPTY_STATES } from '../../constants/emptyStates';
 import { colors, domainColors, radii, spacing } from '../../constants/theme';
@@ -54,7 +55,7 @@ export default function MyThingsScreen() {
       <View style={styles.list}>
         {view === 'projects' &&
           (projects.length === 0 ? (
-            <EmptyText text={EMPTY_STATES.projects} />
+            <EmptyState text={EMPTY_STATES.projects} />
           ) : (
             projects.map((project) => (
               <Card
@@ -81,7 +82,7 @@ export default function MyThingsScreen() {
 
         {view === 'todo' &&
           (openTasks.length === 0 ? (
-            <EmptyText text={EMPTY_STATES.tasks} />
+            <EmptyState text={EMPTY_STATES.tasks} />
           ) : (
             openTasks.map((task) => {
               const accent = (task.domain && domainColors[task.domain]) || colors.dustyBlue;
@@ -109,7 +110,7 @@ export default function MyThingsScreen() {
 
         {view === 'saved' &&
           (memories.length === 0 ? (
-            <EmptyText text={EMPTY_STATES.memories} />
+            <EmptyState text={EMPTY_STATES.memories} />
           ) : (
             memories.map((memory) => (
               <Card key={memory.id} accentColor={colors.plum}>
@@ -123,7 +124,7 @@ export default function MyThingsScreen() {
 
         {view === 'captured' &&
           (captures.length === 0 ? (
-            <EmptyText text={EMPTY_STATES.captures} />
+            <EmptyState text={EMPTY_STATES.captures} />
           ) : (
             captures.map((capture) => (
               <Card key={capture.id} accentColor={colors.gold}>
@@ -136,14 +137,6 @@ export default function MyThingsScreen() {
           ))}
       </View>
     </Screen>
-  );
-}
-
-function EmptyText({ text }: { text: string }) {
-  return (
-    <AppText variant="body" color={colors.inkMuted}>
-      {text}
-    </AppText>
   );
 }
 
