@@ -1,9 +1,10 @@
 import { useEffect, useRef, useState } from 'react';
 import { Pressable, StyleSheet, TextInput, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 
 import { CAPTURE_PLACEHOLDERS } from '../../constants/domains';
-import { colors, radii, spacing, type } from '../../constants/theme';
+import { colors, goldGradient, radii, spacing, type } from '../../constants/theme';
 import { useVoiceCapture } from '../../lib/voice/useVoiceCapture';
 
 interface CaptureInputProps {
@@ -56,7 +57,7 @@ export function CaptureInput({ onSubmit, placeholderRotationMs = 3200 }: Capture
         <Ionicons
           name={voice.isListening ? 'mic' : 'mic-outline'}
           size={20}
-          color={voice.isListening ? colors.gold : voice.isAvailable ? colors.inkMuted : colors.inkFaint}
+          color={voice.isListening ? colors.gold : voice.isAvailable ? colors.terracotta : colors.inkFaint}
         />
       </Pressable>
       <TextInput
@@ -74,12 +75,19 @@ export function CaptureInput({ onSubmit, placeholderRotationMs = 3200 }: Capture
       <Pressable
         onPress={handleSubmit}
         disabled={!text.trim()}
-        style={[styles.sendButton, !text.trim() && styles.sendButtonDisabled]}
         hitSlop={8}
         accessibilityRole="button"
         accessibilityLabel="Send"
       >
-        <Ionicons name="arrow-up" size={18} color={colors.surface} />
+        {text.trim() ? (
+          <LinearGradient colors={goldGradient} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.sendButton}>
+            <Ionicons name="arrow-up" size={18} color={colors.surface} />
+          </LinearGradient>
+        ) : (
+          <View style={[styles.sendButton, styles.sendButtonDisabled]}>
+            <Ionicons name="arrow-up" size={18} color={colors.surface} />
+          </View>
+        )}
       </Pressable>
     </View>
   );
@@ -115,7 +123,6 @@ const styles = StyleSheet.create({
     width: 32,
     height: 32,
     borderRadius: radii.pill,
-    backgroundColor: colors.navy,
     alignItems: 'center',
     justifyContent: 'center',
   },

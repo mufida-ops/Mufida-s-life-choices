@@ -4,12 +4,11 @@ import { router } from 'expo-router';
 
 import { CaptureConfirmation, type CaptureConfirmationData } from '../../components/capture/CaptureConfirmation';
 import { CaptureInput } from '../../components/capture/CaptureInput';
-import { Greeting } from '../../components/home/Greeting';
+import { HomeHero } from '../../components/home/HomeHero';
 import { QuickActions } from '../../components/home/QuickActions';
 import { RightNowList } from '../../components/home/RightNowList';
-import { AppText } from '../../components/ui/AppText';
 import { Screen } from '../../components/ui/Screen';
-import { colors, spacing } from '../../constants/theme';
+import { spacing } from '../../constants/theme';
 import { useAppStore, useRightNow } from '../../store/useAppStore';
 
 export default function HomeScreen() {
@@ -46,12 +45,9 @@ export default function HomeScreen() {
   return (
     <Screen>
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-        <Greeting name={profile.name} />
-        <AppText variant="greeting" style={styles.question}>
-          What do you need?
-        </AppText>
-
-        <CaptureInput onSubmit={handleSubmit} />
+        <HomeHero name={profile.name}>
+          <CaptureInput onSubmit={handleSubmit} />
+        </HomeHero>
 
         {confirmation ? <CaptureConfirmation data={confirmation} /> : null}
 
@@ -71,6 +67,5 @@ export default function HomeScreen() {
 }
 
 const styles = StyleSheet.create({
-  question: { marginTop: spacing.sm, marginBottom: spacing.md, color: colors.ink },
   spacer: { height: spacing.xs },
 });

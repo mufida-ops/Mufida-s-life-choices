@@ -8,7 +8,7 @@ import { Card } from '../../components/ui/Card';
 import { DomainTag } from '../../components/ui/DomainTag';
 import { Screen } from '../../components/ui/Screen';
 import { ProjectTimeline } from '../../components/project/ProjectTimeline';
-import { colors, radii, spacing } from '../../constants/theme';
+import { colors, domainColors, radii, spacing } from '../../constants/theme';
 import { useAppStore } from '../../store/useAppStore';
 
 export default function ProjectDetailScreen() {
@@ -38,6 +38,8 @@ export default function ProjectDetailScreen() {
     );
   }
 
+  const accent = domainColors[project.domain];
+
   const handleAddNote = () => {
     const trimmed = noteText.trim();
     if (!trimmed) return;
@@ -61,7 +63,7 @@ export default function ProjectDetailScreen() {
       ) : null}
 
       {project.where_left_off ? (
-        <Card style={styles.whereLeftOff}>
+        <Card style={styles.whereLeftOff} accentColor={accent}>
           <AppText variant="label" color={colors.inkFaint}>
             WHERE I LEFT OFF
           </AppText>
@@ -81,7 +83,7 @@ export default function ProjectDetailScreen() {
           <AppText variant="label" color={colors.inkFaint} style={styles.sectionHeading}>
             TIMELINE
           </AppText>
-          <ProjectTimeline tasks={tasks} />
+          <ProjectTimeline tasks={tasks} accentColor={accent} />
         </View>
       ) : null}
 
@@ -96,11 +98,15 @@ export default function ProjectDetailScreen() {
         ) : (
           <View style={styles.list}>
             {tasks.map((task) => (
-              <Card key={task.id}>
+              <Card key={task.id} accentColor={accent}>
                 <View style={styles.taskRow}>
                   <Pressable
                     onPress={() => completeTask(task.id)}
-                    style={[styles.checkbox, task.status === 'done' && styles.checkboxDone]}
+                    style={[
+                      styles.checkbox,
+                      { borderColor: accent },
+                      task.status === 'done' && { backgroundColor: accent, borderColor: accent },
+                    ]}
                     hitSlop={8}
                   >
                     {task.status === 'done' ? <Ionicons name="checkmark" size={13} color={colors.surface} /> : null}
@@ -132,7 +138,7 @@ export default function ProjectDetailScreen() {
             style={styles.noteInput}
             multiline
           />
-          <Pressable onPress={handleAddNote} style={styles.noteSubmit} hitSlop={8}>
+          <Pressable onPress={handleAddNote} style={[styles.noteSubmit, { backgroundColor: accent }]} hitSlop={8}>
             <Ionicons name="arrow-up" size={16} color={colors.surface} />
           </Pressable>
         </View>
@@ -145,7 +151,7 @@ export default function ProjectDetailScreen() {
           </AppText>
           <View style={styles.list}>
             {projectUpdates.map((update) => (
-              <Card key={update.id}>
+              <Card key={update.id} accentColor={accent}>
                 <AppText variant="body">{update.content}</AppText>
                 <AppText variant="small" color={colors.inkFaint}>
                   {new Date(update.created_at).toLocaleString()}
@@ -177,7 +183,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  checkboxDone: { backgroundColor: colors.sage, borderColor: colors.sage },
   taskDone: { textDecorationLine: 'line-through' },
   noteInputRow: {
     flexDirection: 'row',

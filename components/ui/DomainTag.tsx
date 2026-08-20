@@ -1,15 +1,17 @@
 import { StyleSheet, View } from 'react-native';
 
 import { DOMAIN_LABEL } from '../../constants/domains';
-import { colors, domainColors, radii, spacing } from '../../constants/theme';
+import { colors, domainColors, domainTints, radii, spacing } from '../../constants/theme';
 import type { LifeDomain } from '../../types/models';
 import { AppText } from './AppText';
 
 export function DomainTag({ domain }: { domain: LifeDomain }) {
-  const tint = domainColors[domain] ?? colors.inkFaint;
+  const hue = domainColors[domain] ?? colors.inkFaint;
+  const tint = domainTints[domain] ?? colors.surfaceMuted;
   return (
-    <View style={[styles.tag, { borderColor: tint }]}>
-      <AppText variant="label" color={tint}>
+    <View style={[styles.tag, { backgroundColor: tint }]}>
+      <View style={[styles.dot, { backgroundColor: hue }]} />
+      <AppText variant="label" color={hue}>
         {DOMAIN_LABEL[domain].toUpperCase()}
       </AppText>
     </View>
@@ -18,10 +20,17 @@ export function DomainTag({ domain }: { domain: LifeDomain }) {
 
 const styles = StyleSheet.create({
   tag: {
+    flexDirection: 'row',
+    alignItems: 'center',
     alignSelf: 'flex-start',
-    borderWidth: 1,
+    gap: 6,
     borderRadius: radii.pill,
     paddingHorizontal: spacing.sm,
-    paddingVertical: 3,
+    paddingVertical: 5,
+  },
+  dot: {
+    width: 6,
+    height: 6,
+    borderRadius: radii.pill,
   },
 });

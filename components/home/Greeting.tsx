@@ -8,10 +8,10 @@ function greetingForHour(hour: number): string {
   return 'Good evening';
 }
 
-export function Greeting({ name }: { name: string }) {
+export function Greeting({ name, color = colors.inkFaint }: { name: string; color?: string }) {
   const greeting = greetingForHour(new Date().getHours());
   return (
-    <AppText variant="label" color={colors.inkFaint}>
+    <AppText variant="label" color={color}>
       {`${greeting.toUpperCase()}, ${name.toUpperCase()}`}
     </AppText>
   );

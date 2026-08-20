@@ -7,15 +7,15 @@ import { Card } from '../../components/ui/Card';
 import { DomainTag } from '../../components/ui/DomainTag';
 import { Screen } from '../../components/ui/Screen';
 import { EMPTY_STATES } from '../../constants/emptyStates';
-import { colors, radii, spacing } from '../../constants/theme';
+import { colors, domainColors, radii, spacing } from '../../constants/theme';
 import { useAppStore } from '../../store/useAppStore';
 
 type ThingsView = 'projects' | 'todo' | 'saved' | 'captured';
-const VIEWS: { key: ThingsView; label: string }[] = [
-  { key: 'projects', label: 'Projects' },
-  { key: 'todo', label: 'To Do' },
-  { key: 'saved', label: 'Saved' },
-  { key: 'captured', label: 'Captured' },
+const VIEWS: { key: ThingsView; label: string; accent: string }[] = [
+  { key: 'projects', label: 'Projects', accent: colors.terracotta },
+  { key: 'todo', label: 'To Do', accent: colors.dustyBlue },
+  { key: 'saved', label: 'Saved', accent: colors.plum },
+  { key: 'captured', label: 'Captured', accent: colors.gold },
 ];
 
 export default function MyThingsScreen() {
@@ -35,13 +35,20 @@ export default function MyThingsScreen() {
       <AppText variant="h1">My Things</AppText>
 
       <View style={styles.segments}>
-        {VIEWS.map((v) => (
-          <Pressable key={v.key} onPress={() => setView(v.key)} style={[styles.segment, view === v.key && styles.segmentActive]}>
-            <AppText variant="smallMedium" color={view === v.key ? colors.surface : colors.inkMuted}>
-              {v.label}
-            </AppText>
-          </Pressable>
-        ))}
+        {VIEWS.map((v) => {
+          const active = view === v.key;
+          return (
+            <Pressable
+              key={v.key}
+              onPress={() => setView(v.key)}
+              style={[styles.segment, active && { backgroundColor: v.accent }]}
+            >
+              <AppText variant="smallMedium" color={active ? colors.surface : colors.inkMuted}>
+                {v.label}
+              </AppText>
+            </Pressable>
+          );
+        })}
       </View>
 
       <View style={styles.list}>
@@ -50,7 +57,11 @@ export default function MyThingsScreen() {
             <EmptyText text={EMPTY_STATES.projects} />
           ) : (
             projects.map((project) => (
-              <Card key={project.id} onPress={() => router.push(`/project/${project.id}`)}>
+              <Card
+                key={project.id}
+                onPress={() => router.push(`/project/${project.id}`)}
+                accentColor={domainColors[project.domain]}
+              >
                 <DomainTag domain={project.domain} />
                 <AppText variant="h2" style={styles.cardTitle}>
                   {project.title}
@@ -72,21 +83,28 @@ export default function MyThingsScreen() {
           (openTasks.length === 0 ? (
             <EmptyText text={EMPTY_STATES.tasks} />
           ) : (
-            openTasks.map((task) => (
-              <Card key={task.id}>
-                <View style={styles.taskRow}>
-                  <Pressable onPress={() => completeTask(task.id)} style={styles.checkbox} hitSlop={8} />
-                  <View style={styles.taskTextBlock}>
-                    <AppText variant="bodyMedium">{task.title}</AppText>
-                    {task.due_at ? (
-                      <AppText variant="small" color={colors.inkMuted}>
-                        Due {new Date(task.due_at).toLocaleDateString()}
-                      </AppText>
-                    ) : null}
+            openTasks.map((task) => {
+              const accent = (task.domain && domainColors[task.domain]) || colors.dustyBlue;
+              return (
+                <Card key={task.id} accentColor={accent}>
+                  <View style={styles.taskRow}>
+                    <Pressable
+                      onPress={() => completeTask(task.id)}
+                      style={[styles.checkbox, { borderColor: accent }]}
+                      hitSlop={8}
+                    />
+                    <View style={styles.taskTextBlock}>
+                      <AppText variant="bodyMedium">{task.title}</AppText>
+                      {task.due_at ? (
+                        <AppText variant="small" color={colors.inkMuted}>
+                          Due {new Date(task.due_at).toLocaleDateString()}
+                        </AppText>
+                      ) : null}
+                    </View>
                   </View>
-                </View>
-              </Card>
-            ))
+                </Card>
+              );
+            })
           ))}
 
         {view === 'saved' &&
@@ -94,7 +112,7 @@ export default function MyThingsScreen() {
             <EmptyText text={EMPTY_STATES.memories} />
           ) : (
             memories.map((memory) => (
-              <Card key={memory.id}>
+              <Card key={memory.id} accentColor={colors.plum}>
                 <AppText variant="bodyMedium">{memory.title}</AppText>
                 <AppText variant="small" color={colors.inkMuted}>
                   {memory.content}
@@ -108,7 +126,7 @@ export default function MyThingsScreen() {
             <EmptyText text={EMPTY_STATES.captures} />
           ) : (
             captures.map((capture) => (
-              <Card key={capture.id}>
+              <Card key={capture.id} accentColor={colors.gold}>
                 <AppText variant="body">{capture.raw_text}</AppText>
                 <AppText variant="small" color={colors.inkFaint}>
                   {new Date(capture.created_at).toLocaleString()}
@@ -130,9 +148,8 @@ function EmptyText({ text }: { text: string }) {
 }
 
 const styles = StyleSheet.create({
-  segments: { flexDirection: 'row', gap: spacing.sm, marginTop: spacing.md, marginBottom: spacing.lg },
+  segments: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm, marginTop: spacing.md, marginBottom: spacing.lg },
   segment: { paddingVertical: 6, paddingHorizontal: spacing.sm, borderRadius: radii.pill, backgroundColor: colors.surfaceMuted },
-  segmentActive: { backgroundColor: colors.navy },
   list: { gap: spacing.sm },
   cardTitle: { marginTop: spacing.xs },
   taskRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
@@ -141,7 +158,6 @@ const styles = StyleSheet.create({
     height: 20,
     borderRadius: radii.sm,
     borderWidth: 1.5,
-    borderColor: colors.inkFaint,
   },
   taskTextBlock: { flex: 1 },
 });

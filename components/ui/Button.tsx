@@ -1,6 +1,7 @@
 import { Pressable, StyleSheet } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 
-import { colors, radii, spacing, type } from '../../constants/theme';
+import { colors, goldGradient, radii, spacing, type } from '../../constants/theme';
 import { AppText } from './AppText';
 
 interface ButtonProps {
@@ -11,23 +12,38 @@ interface ButtonProps {
 }
 
 export function Button({ label, onPress, variant = 'primary', disabled }: ButtonProps) {
+  if (variant === 'primary') {
+    return (
+      <Pressable onPress={onPress} disabled={disabled} style={disabled && styles.disabled}>
+        {({ pressed }) => (
+          <LinearGradient
+            colors={goldGradient}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 0 }}
+            style={[styles.base, pressed && !disabled && styles.pressed]}
+          >
+            <AppText variant="bodyMedium" color={colors.surface}>
+              {label}
+            </AppText>
+          </LinearGradient>
+        )}
+      </Pressable>
+    );
+  }
+
   return (
     <Pressable
       onPress={onPress}
       disabled={disabled}
       style={({ pressed }) => [
         styles.base,
-        variant === 'primary' && styles.primary,
         variant === 'secondary' && styles.secondary,
         variant === 'ghost' && styles.ghost,
         pressed && !disabled && styles.pressed,
         disabled && styles.disabled,
       ]}
     >
-      <AppText
-        variant="bodyMedium"
-        color={variant === 'primary' ? colors.surface : colors.ink}
-      >
+      <AppText variant="bodyMedium" color={colors.ink}>
         {label}
       </AppText>
     </Pressable>
@@ -42,7 +58,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  primary: { backgroundColor: colors.navy },
   secondary: {
     backgroundColor: colors.surface,
     borderWidth: StyleSheet.hairlineWidth,

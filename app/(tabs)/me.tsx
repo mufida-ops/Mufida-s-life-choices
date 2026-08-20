@@ -7,7 +7,7 @@ import { Card } from '../../components/ui/Card';
 import { Screen } from '../../components/ui/Screen';
 import { DOMAINS, DOMAIN_LABEL } from '../../constants/domains';
 import { EMPTY_STATES } from '../../constants/emptyStates';
-import { colors, domainColors, radii, spacing } from '../../constants/theme';
+import { colors, domainColors, domainTints, radii, spacing } from '../../constants/theme';
 import { useAppStore } from '../../store/useAppStore';
 import type { Memory } from '../../types/models';
 
@@ -29,11 +29,20 @@ export default function MeScreen() {
     <Screen>
       <AppText variant="h1">Me</AppText>
 
-      <Card style={styles.profileCard}>
-        <AppText variant="h2">{profile.name}</AppText>
-        <AppText variant="small" color={colors.inkMuted}>
-          {profile.timezone}
-        </AppText>
+      <Card style={styles.profileCard} accentColor={colors.gold}>
+        <View style={styles.profileRow}>
+          <View style={styles.avatar}>
+            <AppText variant="h2" color={colors.surface}>
+              {profile.name.charAt(0).toUpperCase() || '?'}
+            </AppText>
+          </View>
+          <View>
+            <AppText variant="h2">{profile.name}</AppText>
+            <AppText variant="small" color={colors.inkMuted}>
+              {profile.timezone}
+            </AppText>
+          </View>
+        </View>
       </Card>
 
       <View style={styles.section}>
@@ -44,12 +53,13 @@ export default function MeScreen() {
           {DOMAINS.map((domain) => {
             const activeCount = projects.filter((p) => p.domain === domain && p.status === 'active').length;
             return (
-              <View key={domain} style={[styles.domainChip, { borderColor: domainColors[domain] }]}>
+              <View key={domain} style={[styles.domainChip, { backgroundColor: domainTints[domain] }]}>
+                <View style={[styles.domainDot, { backgroundColor: domainColors[domain] }]} />
                 <AppText variant="smallMedium" color={domainColors[domain]}>
                   {DOMAIN_LABEL[domain]}
                 </AppText>
                 {activeCount > 0 ? (
-                  <AppText variant="small" color={colors.inkFaint}>
+                  <AppText variant="small" color={domainColors[domain]}>
                     {' '}
                     · {activeCount}
                   </AppText>
@@ -74,7 +84,7 @@ export default function MeScreen() {
             style={styles.rememberInput}
             multiline
           />
-          <Pressable onPress={handleRemember} style={styles.rememberSubmit} hitSlop={8}>
+          <Pressable onPress={handleRemember} style={[styles.rememberSubmit, { backgroundColor: colors.plum }]} hitSlop={8}>
             <Ionicons name="arrow-up" size={16} color={colors.surface} />
           </Pressable>
         </View>
@@ -107,7 +117,7 @@ function MemoryRow({ memory }: { memory: Memory }) {
   };
 
   return (
-    <Card>
+    <Card accentColor={colors.plum}>
       <AppText variant="bodyMedium">{memory.title}</AppText>
       {editing ? (
         <TextInput value={draft} onChangeText={setDraft} style={styles.editInput} multiline autoFocus />
@@ -140,17 +150,28 @@ function ActionLink({ label, onPress, tone }: { label: string; onPress: () => vo
 }
 
 const styles = StyleSheet.create({
-  profileCard: { marginTop: spacing.md, gap: 2 },
+  profileCard: { marginTop: spacing.md },
+  profileRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.md },
+  avatar: {
+    width: 48,
+    height: 48,
+    borderRadius: radii.pill,
+    backgroundColor: colors.gold,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   section: { marginTop: spacing.xl },
   sectionHeading: { marginBottom: spacing.sm },
   domainRow: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },
   domainChip: {
     flexDirection: 'row',
-    borderWidth: 1,
+    alignItems: 'center',
+    gap: 6,
     borderRadius: radii.pill,
     paddingHorizontal: spacing.sm,
     paddingVertical: 6,
   },
+  domainDot: { width: 6, height: 6, borderRadius: radii.pill },
   rememberRow: {
     flexDirection: 'row',
     alignItems: 'flex-end',

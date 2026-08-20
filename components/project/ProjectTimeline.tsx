@@ -8,7 +8,7 @@ import { AppText } from '../ui/AppText';
  * A simple readable horizontal sequence, not a full Gantt (spec section 15): ordered by
  * due date (falling back to creation order), showing dependency order and status at a glance.
  */
-export function ProjectTimeline({ tasks }: { tasks: Task[] }) {
+export function ProjectTimeline({ tasks, accentColor = colors.gold }: { tasks: Task[]; accentColor?: string }) {
   const ordered = [...tasks].sort((a, b) => {
     if (a.due_at && b.due_at) return new Date(a.due_at).getTime() - new Date(b.due_at).getTime();
     if (a.due_at) return -1;
@@ -24,7 +24,13 @@ export function ProjectTimeline({ tasks }: { tasks: Task[] }) {
         <View key={task.id} style={styles.node}>
           {index > 0 ? <View style={styles.connector} /> : null}
           <View style={styles.nodeContent}>
-            <View style={[styles.dot, task.status === 'done' && styles.dotDone]} />
+            <View
+              style={[
+                styles.dot,
+                { borderColor: accentColor },
+                task.status === 'done' && { backgroundColor: accentColor },
+              ]}
+            />
             <AppText variant="smallMedium" style={styles.nodeTitle} numberOfLines={2}>
               {task.title}
             </AppText>
@@ -63,6 +69,5 @@ const styles = StyleSheet.create({
     borderColor: colors.gold,
     marginBottom: spacing.xs,
   },
-  dotDone: { backgroundColor: colors.sage, borderColor: colors.sage },
   nodeTitle: { marginBottom: 2 },
 });

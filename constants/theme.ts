@@ -1,38 +1,57 @@
 /**
- * Design tokens for the "warm editorial minimalism" direction (build spec section 23).
- * Deliberately small: a personal journal feel, not a component-library color ramp.
+ * Design tokens — "warm editorial", now with real color: each life domain gets a distinct,
+ * saturated hue used consistently (tinted card backgrounds, filled tags, accent stripes), and
+ * key hero moments (Home, onboarding) use a warm gradient. Still restrained where it counts —
+ * no neon, no gradients on every surface — but noticeably richer than a pure neutral palette.
  */
 
 export const colors = {
-  background: '#F7F2EA',
+  background: '#FAF3E8',
   surface: '#FFFFFF',
-  surfaceMuted: '#F1EAE0',
-  border: '#E6DCCB',
-  ink: '#2B2E3E',
-  inkMuted: '#5B5A52',
-  inkFaint: '#8C887D',
-  navy: '#2F3450',
-  gold: '#B98D3E',
-  goldMuted: '#DDBE84',
-  terracotta: '#B36B45',
-  sage: '#748468',
-  clay: '#A9764C',
-  dustyBlue: '#5E7A8C',
-  plum: '#7A5D6B',
-  success: '#5E7D5E',
-  danger: '#A24E3F',
-  overlay: 'rgba(43, 46, 62, 0.4)',
+  surfaceMuted: '#F3EADA',
+  border: '#E9DCC4',
+  ink: '#2B2438',
+  inkMuted: '#5B5468',
+  inkFaint: '#8D8698',
+  navy: '#332B5C',
+  gold: '#D6A62E',
+  goldMuted: '#EFCB6E',
+  terracotta: '#DB6B3A',
+  sage: '#2F8F5B',
+  clay: '#C97F2B',
+  dustyBlue: '#2E6E8E',
+  plum: '#A6447A',
+  indigo: '#5B3F94',
+  success: '#2F8F5B',
+  danger: '#C7452F',
+  overlay: 'rgba(43, 36, 56, 0.45)',
 } as const;
 
+/** Bold, saturated per-domain hue — used for tag text, icons, accent stripes, chart-like bits. */
 export const domainColors: Record<string, string> = {
   work: colors.dustyBlue,
-  university: colors.navy,
+  university: colors.indigo,
   creative: colors.terracotta,
   home: colors.clay,
   spiritual: colors.plum,
   physical: colors.sage,
   personal: colors.gold,
 };
+
+/** Soft tinted background of the same hue — for filled tags and card washes. */
+export const domainTints: Record<string, string> = {
+  work: '#DCEAF1',
+  university: '#E6DFF4',
+  creative: '#FBE1D2',
+  home: '#F8E5C3',
+  spiritual: '#F5DDEB',
+  physical: '#DCF1E4',
+  personal: '#F8ECC4',
+};
+
+/** Warm, jewel-toned gradient for hero moments (Home header, onboarding). */
+export const heroGradient = [colors.navy, colors.plum, colors.terracotta] as const;
+export const goldGradient = [colors.gold, colors.terracotta] as const;
 
 export const spacing = {
   xs: 4,
@@ -72,10 +91,10 @@ export const type = {
 
 export const shadow = {
   card: {
-    shadowColor: '#3A3323',
-    shadowOpacity: 0.06,
-    shadowRadius: 12,
-    shadowOffset: { width: 0, height: 4 },
+    shadowColor: '#3A2A23',
+    shadowOpacity: 0.08,
+    shadowRadius: 14,
+    shadowOffset: { width: 0, height: 5 },
     elevation: 2,
   },
 } as const;

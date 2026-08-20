@@ -1,5 +1,6 @@
 import { useCallback, useRef, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
 
 import { CaptureInput } from '../../components/capture/CaptureInput';
@@ -7,7 +8,7 @@ import { AppText } from '../../components/ui/AppText';
 import { Card } from '../../components/ui/Card';
 import { RightNowItem } from '../../components/home/RightNowItem';
 import { Screen } from '../../components/ui/Screen';
-import { colors, radii, spacing } from '../../constants/theme';
+import { colors, domainColors, goldGradient, radii, spacing } from '../../constants/theme';
 import { respondLocally } from '../../features/assistant/respondLocally';
 import { generateId } from '../../lib/id';
 import { useAppStore } from '../../store/useAppStore';
@@ -81,11 +82,19 @@ function ChatBubble({ message }: { message: ChatMessage }) {
   const isUser = message.role === 'user';
   return (
     <View style={[styles.bubbleRow, isUser && styles.bubbleRowUser]}>
-      <View style={[styles.bubble, isUser ? styles.bubbleUser : styles.bubbleAssistant]}>
-        <AppText variant="body" color={isUser ? colors.surface : colors.ink}>
-          {message.text}
-        </AppText>
-      </View>
+      {isUser ? (
+        <LinearGradient colors={goldGradient} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={styles.bubbleUser}>
+          <AppText variant="body" color={colors.surface}>
+            {message.text}
+          </AppText>
+        </LinearGradient>
+      ) : (
+        <View style={[styles.bubble, styles.bubbleAssistant]}>
+          <AppText variant="body" color={colors.ink}>
+            {message.text}
+          </AppText>
+        </View>
+      )}
 
       {message.rightNowItems && message.rightNowItems.length > 0 ? (
         <View style={styles.structuredBlock}>
@@ -97,7 +106,7 @@ function ChatBubble({ message }: { message: ChatMessage }) {
 
       {message.project ? (
         <View style={styles.structuredBlock}>
-          <Card>
+          <Card accentColor={domainColors[message.project.domain]}>
             <AppText variant="h2">{message.project.title}</AppText>
             <View style={styles.projectActions}>
               <ActionLink label="Continue project" onPress={() => router.push(`/project/${message.project!.id}`)} />
@@ -125,7 +134,13 @@ const styles = StyleSheet.create({
   bubbleRow: { alignItems: 'flex-start', gap: spacing.sm },
   bubbleRowUser: { alignItems: 'flex-end' },
   bubble: { maxWidth: '85%', borderRadius: radii.lg, paddingHorizontal: spacing.md, paddingVertical: spacing.sm },
-  bubbleUser: { backgroundColor: colors.navy, borderBottomRightRadius: radii.sm },
+  bubbleUser: {
+    maxWidth: '85%',
+    borderRadius: radii.lg,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+    borderBottomRightRadius: radii.sm,
+  },
   bubbleAssistant: {
     backgroundColor: colors.surface,
     borderWidth: StyleSheet.hairlineWidth,
