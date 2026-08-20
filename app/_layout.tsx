@@ -8,6 +8,7 @@ import { useFonts as useFrauncesFonts, Fraunces_500Medium, Fraunces_600SemiBold,
 import { useFonts as useInterFonts, Inter_400Regular, Inter_500Medium, Inter_600SemiBold } from '@expo-google-fonts/inter';
 
 import { colors } from '../constants/theme';
+import { isSupabaseConfigured } from '../lib/supabase/client';
 import { useAppStore } from '../store/useAppStore';
 
 SplashScreen.preventAutoHideAsync().catch(() => {});
@@ -22,6 +23,7 @@ export default function RootLayout() {
 
   const hasHydrated = useAppStore((s) => s.hasHydrated);
   const seedIfEmpty = useAppStore((s) => s.seedIfEmpty);
+  const hydrateFromSupabase = useAppStore((s) => s.hydrateFromSupabase);
   const onboardingComplete = useAppStore((s) => s.onboardingComplete);
   const router = useRouter();
   const segments = useSegments();
@@ -30,8 +32,14 @@ export default function RootLayout() {
 
   useEffect(() => {
     if (!hasHydrated) return;
-    if (__DEV__) seedIfEmpty();
-  }, [hasHydrated, seedIfEmpty]);
+    // Once Supabase is configured, a returning signed-in user's data comes from there, not
+    // from dev seed fixtures — re-fetch it on launch instead of seeding local fake data.
+    if (isSupabaseConfigured) {
+      if (onboardingComplete) hydrateFromSupabase();
+    } else if (__DEV__) {
+      seedIfEmpty();
+    }
+  }, [hasHydrated, onboardingComplete, seedIfEmpty, hydrateFromSupabase]);
 
   useEffect(() => {
     if (ready) SplashScreen.hideAsync().catch(() => {});

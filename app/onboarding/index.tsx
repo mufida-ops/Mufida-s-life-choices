@@ -8,11 +8,12 @@ import { AppText } from '../../components/ui/AppText';
 import { Button } from '../../components/ui/Button';
 import { FloralOrnament } from '../../components/ui/FloralOrnament';
 import { colors, heroGradient, radii, shadow, spacing } from '../../constants/theme';
-import { localAuth } from '../../lib/auth/localAuth';
+import { authProvider } from '../../lib/auth';
 import { useAppStore } from '../../store/useAppStore';
 
 export default function OnboardingScreen() {
   const completeOnboarding = useAppStore((s) => s.completeOnboarding);
+  const hydrateFromSupabase = useAppStore((s) => s.hydrateFromSupabase);
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -23,8 +24,9 @@ export default function OnboardingScreen() {
     setError(null);
     setSubmitting(true);
     try {
-      await localAuth.signUp(email.trim(), password);
-      completeOnboarding({ name: name.trim() || 'Friend' });
+      const auth = await authProvider.signUp(email.trim(), password);
+      completeOnboarding({ id: auth.userId, name: name.trim() || 'Friend' });
+      await hydrateFromSupabase();
       router.replace('/(tabs)');
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Something went wrong.');

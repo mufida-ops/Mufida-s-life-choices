@@ -7,6 +7,17 @@ import { classifyCapture } from '../features/capture/classifyCapture';
 import { rankItems } from '../features/resurfacing/rankItems';
 import { generateId } from '../lib/id';
 import { cancelReminderNotification, scheduleReminderNotification } from '../lib/notifications/scheduleReminder';
+import {
+  deleteMemoryRemote,
+  hydrateFromSupabase as fetchHydratedData,
+  syncCapture,
+  syncMemory,
+  syncProfile,
+  syncProject,
+  syncProjectUpdate,
+  syncReminder,
+  syncTask,
+} from '../lib/supabase/sync';
 import { SEED_MEMORIES, SEED_PROFILE, SEED_PROJECTS, SEED_REMINDERS, SEED_TASKS } from '../constants/seed';
 import type {
   Capture,
@@ -48,6 +59,8 @@ interface AppState {
   setHasHydrated: (value: boolean) => void;
   seedIfEmpty: () => void;
   clearAllData: () => void;
+  /** Pulls the signed-in user's existing Supabase data (if any) into the store; no-op when unconfigured. */
+  hydrateFromSupabase: () => Promise<void>;
 
   updateProfile: (patch: Partial<Profile>) => void;
 
@@ -129,7 +142,43 @@ export const useAppStore = create<AppState>()(
           dismissedNudges: {},
         }),
 
-      updateProfile: (patch) => set((state) => ({ profile: { ...state.profile, ...patch } })),
+      hydrateFromSupabase: async () => {
+        const localProfile = get().profile;
+        const data = await fetchHydratedData(localProfile.id);
+        if (!data) return;
+
+        // The new-user DB trigger creates a bare profile row (name '', timezone 'UTC') before
+        // this device ever gets to push its onboarding name/timezone — so only trust remote
+        // values that look like they were actually set, otherwise keep what's on this device.
+        const remote = data.profile;
+        const profile = remote
+          ? {
+              ...localProfile,
+              ...remote,
+              name: remote.name || localProfile.name,
+              timezone: remote.timezone && remote.timezone !== 'UTC' ? remote.timezone : localProfile.timezone,
+            }
+          : localProfile;
+        set({
+          profile,
+          tasks: data.tasks,
+          projects: data.projects,
+          projectUpdates: data.projectUpdates,
+          reminders: data.reminders,
+          captures: data.captures,
+          memories: data.memories,
+        });
+        // Push this device's name/timezone back up in case the remote profile row was just
+        // auto-created (empty name) by the new-user trigger.
+        void syncProfile(profile);
+      },
+
+      updateProfile: (patch) =>
+        set((state) => {
+          const profile = { ...state.profile, ...patch };
+          void syncProfile(profile);
+          return { profile };
+        }),
 
       addCapture: async (rawText) => {
         const state = get();
@@ -156,6 +205,7 @@ export const useAppStore = create<AppState>()(
           capture.resulting_object_type = 'reminder';
           capture.resulting_object_id = reminder.id;
           set((s) => ({ captures: [capture, ...s.captures] }));
+          await syncCapture(capture);
           return { capture, createdKind: 'reminder', createdTitle: classification.title, reminder, notificationScheduled };
         }
 
@@ -165,6 +215,7 @@ export const useAppStore = create<AppState>()(
           capture.resulting_object_type = 'task';
           capture.resulting_object_id = task.id;
           set((s) => ({ captures: [capture, ...s.captures] }));
+          await syncCapture(capture);
           return { capture, createdKind: 'idea', createdTitle: classification.title, notificationScheduled: false };
         }
 
@@ -173,6 +224,7 @@ export const useAppStore = create<AppState>()(
         capture.resulting_object_type = 'task';
         capture.resulting_object_id = task.id;
         set((s) => ({ captures: [capture, ...s.captures] }));
+        await syncCapture(capture);
         return { capture, createdKind: 'task', createdTitle: classification.title, notificationScheduled: false };
       },
 
@@ -199,25 +251,45 @@ export const useAppStore = create<AppState>()(
           updated_at: now(),
         };
         set((s) => ({ tasks: [task, ...s.tasks] }));
+        void syncTask(task);
         return task;
       },
 
-      updateTask: (taskId, patch) =>
+      updateTask: (taskId, patch) => {
+        let updated: Task | undefined;
         set((s) => ({
-          tasks: s.tasks.map((t) => (t.id === taskId ? { ...t, ...patch, updated_at: now() } : t)),
-        })),
+          tasks: s.tasks.map((t) => {
+            if (t.id !== taskId) return t;
+            updated = { ...t, ...patch, updated_at: now() };
+            return updated;
+          }),
+        }));
+        if (updated) void syncTask(updated);
+      },
 
-      completeTask: (taskId) =>
+      completeTask: (taskId) => {
+        let updated: Task | undefined;
         set((s) => ({
-          tasks: s.tasks.map((t) =>
-            t.id === taskId ? { ...t, status: 'done', completed_at: now(), updated_at: now() } : t
-          ),
-        })),
+          tasks: s.tasks.map((t) => {
+            if (t.id !== taskId) return t;
+            updated = { ...t, status: 'done', completed_at: now(), updated_at: now() };
+            return updated;
+          }),
+        }));
+        if (updated) void syncTask(updated);
+      },
 
-      touchTaskViewed: (taskId) =>
+      touchTaskViewed: (taskId) => {
+        let updated: Task | undefined;
         set((s) => ({
-          tasks: s.tasks.map((t) => (t.id === taskId ? { ...t, last_viewed_at: now() } : t)),
-        })),
+          tasks: s.tasks.map((t) => {
+            if (t.id !== taskId) return t;
+            updated = { ...t, last_viewed_at: now() };
+            return updated;
+          }),
+        }));
+        if (updated) void syncTask(updated);
+      },
 
       addProject: (input) => {
         const state = get();
@@ -237,15 +309,21 @@ export const useAppStore = create<AppState>()(
           updated_at: now(),
         };
         set((s) => ({ projects: [project, ...s.projects] }));
+        void syncProject(project);
         return project;
       },
 
-      updateProject: (projectId, patch) =>
+      updateProject: (projectId, patch) => {
+        let updated: Project | undefined;
         set((s) => ({
-          projects: s.projects.map((p) =>
-            p.id === projectId ? { ...p, ...patch, last_activity_at: now(), updated_at: now() } : p
-          ),
-        })),
+          projects: s.projects.map((p) => {
+            if (p.id !== projectId) return p;
+            updated = { ...p, ...patch, last_activity_at: now(), updated_at: now() };
+            return updated;
+          }),
+        }));
+        if (updated) void syncProject(updated);
+      },
 
       addProjectUpdate: (projectId, content) => {
         const state = get();
@@ -256,10 +334,17 @@ export const useAppStore = create<AppState>()(
           content,
           created_at: now(),
         };
+        let touchedProject: Project | undefined;
         set((s) => ({
           projectUpdates: [update, ...s.projectUpdates],
-          projects: s.projects.map((p) => (p.id === projectId ? { ...p, last_activity_at: now() } : p)),
+          projects: s.projects.map((p) => {
+            if (p.id !== projectId) return p;
+            touchedProject = { ...p, last_activity_at: now() };
+            return touchedProject;
+          }),
         }));
+        void syncProjectUpdate(update);
+        if (touchedProject) void syncProject(touchedProject);
       },
 
       addReminder: async (input) => {
@@ -281,6 +366,7 @@ export const useAppStore = create<AppState>()(
           updated_at: now(),
         };
         set((s) => ({ reminders: [reminder, ...s.reminders] }));
+        await syncReminder(reminder);
         return reminder;
       },
 
@@ -289,9 +375,15 @@ export const useAppStore = create<AppState>()(
         if (reminder?.notification_id) {
           await cancelReminderNotification(reminder.notification_id);
         }
+        let updated: Reminder | undefined;
         set((s) => ({
-          reminders: s.reminders.map((r) => (r.id === reminderId ? { ...r, status: 'cancelled', updated_at: now() } : r)),
+          reminders: s.reminders.map((r) => {
+            if (r.id !== reminderId) return r;
+            updated = { ...r, status: 'cancelled', updated_at: now() };
+            return updated;
+          }),
         }));
+        if (updated) await syncReminder(updated);
       },
 
       addMemory: (input) => {
@@ -311,20 +403,38 @@ export const useAppStore = create<AppState>()(
           updated_at: now(),
         };
         set((s) => ({ memories: [memory, ...s.memories] }));
+        void syncMemory(memory);
         return memory;
       },
 
-      updateMemory: (memoryId, patch) =>
+      updateMemory: (memoryId, patch) => {
+        let updated: Memory | undefined;
         set((s) => ({
-          memories: s.memories.map((m) => (m.id === memoryId ? { ...m, ...patch, updated_at: now() } : m)),
-        })),
+          memories: s.memories.map((m) => {
+            if (m.id !== memoryId) return m;
+            updated = { ...m, ...patch, updated_at: now() };
+            return updated;
+          }),
+        }));
+        if (updated) void syncMemory(updated);
+      },
 
-      forgetMemory: (memoryId) => set((s) => ({ memories: s.memories.filter((m) => m.id !== memoryId) })),
+      forgetMemory: (memoryId) => {
+        set((s) => ({ memories: s.memories.filter((m) => m.id !== memoryId) }));
+        void deleteMemoryRemote(memoryId);
+      },
 
-      touchMemoryViewed: (memoryId) =>
+      touchMemoryViewed: (memoryId) => {
+        let updated: Memory | undefined;
         set((s) => ({
-          memories: s.memories.map((m) => (m.id === memoryId ? { ...m, last_viewed_at: now() } : m)),
-        })),
+          memories: s.memories.map((m) => {
+            if (m.id !== memoryId) return m;
+            updated = { ...m, last_viewed_at: now() };
+            return updated;
+          }),
+        }));
+        if (updated) void syncMemory(updated);
+      },
 
       respondToCandidate: (candidate, response) => {
         const state = get();
