@@ -5,6 +5,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { heroGradient, radii, spacing } from '../../constants/theme';
 import { AppText } from '../ui/AppText';
 import { FloralOrnament } from '../ui/FloralOrnament';
+import { DailyReflection } from './DailyReflection';
 import { Greeting } from './Greeting';
 
 export function HomeHero({ name, children }: { name: string; children: ReactNode }) {
@@ -24,6 +25,7 @@ export function HomeHero({ name, children }: { name: string; children: ReactNode
         style={styles.ornament}
       />
       <Greeting name={name} color="rgba(255,255,255,0.78)" />
+      <DailyReflection />
       <AppText variant="greeting" color="#FFFFFF" style={styles.question}>
         What do you need?
       </AppText>

@@ -89,6 +89,7 @@ export const type = {
   small: { fontFamily: fontFamily.body, fontSize: 13, lineHeight: 18 },
   smallMedium: { fontFamily: fontFamily.bodyMedium, fontSize: 13, lineHeight: 18 },
   label: { fontFamily: fontFamily.bodySemiBold, fontSize: 12, lineHeight: 16, letterSpacing: 0.6 },
+  reflection: { fontFamily: fontFamily.displayItalic, fontSize: 14, lineHeight: 20 },
 } as const;
 
 export const shadow = {
