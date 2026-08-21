@@ -51,8 +51,9 @@ export const domainTints: Record<string, string> = {
   personal: '#F6EAD0',
 };
 
-/** Soft pastel gradient for hero moments (Home header, onboarding) — dusty blue to lavender to peach. */
-export const heroGradient = [colors.navy, colors.plum, colors.terracotta] as const;
+/** Warm, single-family gradient for hero moments (Home header, onboarding) — soft honey to clay,
+ * no purple/blue in the mix, echoing the same warmth as the primary button's goldGradient. */
+export const heroGradient = [colors.gold, colors.terracotta, colors.clay] as const;
 export const goldGradient = [colors.gold, colors.terracotta] as const;
 
 export const spacing = {
