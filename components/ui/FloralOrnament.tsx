@@ -70,7 +70,7 @@ function Leaf({
 export function FloralOrnament({
   size = 96,
   lineColor = colors.sage,
-  bloomColor = colors.terracotta,
+  bloomColor = colors.gold,
   opacity = 1,
   flip = false,
   rotate = 0,
