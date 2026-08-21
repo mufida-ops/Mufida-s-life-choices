@@ -10,6 +10,8 @@ import { RightNowItem } from '../../components/home/RightNowItem';
 import { Screen } from '../../components/ui/Screen';
 import { colors, domainColors, goldGradient, radii, spacing } from '../../constants/theme';
 import { respondLocally } from '../../features/assistant/respondLocally';
+import { askAssistant } from '../../lib/ai/askAssistant';
+import { executeProposedAction } from '../../lib/ai/executeAction';
 import { generateId } from '../../lib/id';
 import { useAppStore } from '../../store/useAppStore';
 import type { ResurfacingCandidate, Project } from '../../types/models';
@@ -34,11 +36,26 @@ export default function AskScreen() {
     },
   ]);
   const listRef = useRef<ScrollView>(null);
+  const conversationIdRef = useRef<string | null>(null);
 
   const handleSubmit = useCallback(
     async (text: string) => {
       const userMessage: ChatMessage = { id: generateId(), role: 'user', text };
       setMessages((prev) => [...prev, userMessage]);
+
+      // Real backend first (Claude with tool use against this user's own data); fall back to
+      // the local heuristic responder when Supabase/the AI key aren't configured or reachable.
+      const remote = await askAssistant(text, conversationIdRef.current);
+
+      if (remote) {
+        conversationIdRef.current = remote.conversationId;
+        for (const action of remote.actions) {
+          await executeProposedAction(action);
+        }
+        setMessages((prev) => [...prev, { id: generateId(), role: 'assistant', text: remote.text }]);
+        requestAnimationFrame(() => listRef.current?.scrollToEnd({ animated: true }));
+        return;
+      }
 
       const reply = respondLocally(text, { projects, getRightNow: () => getRightNow(4) });
 
