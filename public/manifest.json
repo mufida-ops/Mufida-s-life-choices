@@ -1,0 +1,12 @@
+{
+  "name": "Mufida's Life Choices",
+  "short_name": "Mufida",
+  "description": "A calm personal AI life assistant.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#FBF6EE",
+  "theme_color": "#332B5C",
+  "icons": [
+    { "src": "/apple-touch-icon.png", "sizes": "1024x1024", "type": "image/png" }
+  ]
+}
